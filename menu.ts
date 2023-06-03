@@ -17,12 +17,12 @@ export class Menu {
   start(): void {
     console.log('');
     console.log('');
-    console.log('=======================');
+    console.log('================================');
     console.log('Digite 1 para inserir');
     console.log('Digite 2 para remover');
     console.log('Digite 3 para inspecionar um nó');
     console.log('Digite 4 para sair');
-    console.log('=======================');
+    console.log('================================');
     console.log('');
     console.log('');
 

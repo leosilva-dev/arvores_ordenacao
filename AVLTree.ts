@@ -2,13 +2,13 @@ export class Node {
     value: number;
     left: Node | null;
     right: Node | null;
-    height: number;
+    altura: number;
 
     constructor(value: number) {
         this.value = value;
         this.left = null;
         this.right = null;
-        this.height = 1;
+        this.altura = 1;
     }
 }
 
@@ -20,19 +20,19 @@ export class AVLTree {
     this.root = null;
   }
   
-  getHeight(node: Node | null): number {
-    return node === null ? 0 : node.height
+  getAltura(node: Node | null): number {
+    return node === null ? 0 : node.altura
   }
 
-  updateHeight(node: Node) {
-    node.height = Math.max(this.getHeight(node.left), this.getHeight(node.right)) + 1;
+  atualizaAltura(node: Node) {
+    node.altura = Math.max(this.getAltura(node.left), this.getAltura(node.right)) + 1;
   }
 
-  getBalanceFactor(node: Node | null): number {
+  getFatorBalanceamento(node: Node | null): number {
     if (node === null) {
       return 0;
     }
-    return this.getHeight(node.left) - this.getHeight(node.right);
+    return this.getAltura(node.left) - this.getAltura(node.right);
   }
 
 
@@ -41,14 +41,15 @@ export class AVLTree {
     
     if(!valorJaInserido){
       console.log('');
+      this.root = this.insertNode(this.root, value);
       console.log(`Valor ${value} inserido na árvore AVL.`);
+      this.root = this.balancearNo(this.root);
+      console.log(`Árvore balanceada após inserção.`);
     }else{
       console.log('');
       console.log(`A árvore já contém o valor ${value}.`);
     }
     
-  
-    this.root = this.insertNode(this.root, value);
   }
 
   insertNode(root: Node | null, value: number): Node {
@@ -58,18 +59,20 @@ export class AVLTree {
 
     if (value < root.value) {
       root.left = this.insertNode(root.left, value);
+      this.atualizaAltura(root);
     } else if (value > root.value) {
       root.right = this.insertNode(root.right, value);
+      this.atualizaAltura(root);
     } else {
       return root;
     }
 
     
     
-    return root
+    return this.balancearNo(root)
   }
 
-  findMinNode(node: Node): Node {
+  buscaMinNode(node: Node): Node {
     let currentNode = node;
     while (currentNode.left !== null) {
       currentNode = currentNode.left;
@@ -83,15 +86,15 @@ export class AVLTree {
     
     if(valorPresenteNaArvore){
       console.log('');
+      this.root = this.removeNode(this.root, value);
       console.log(`Valor ${value} removido da árvore AVL.`);
+      this.root = this.balancearNo(this.root);
+      console.log(`Árvore balanceada após remoção.`);
     }else{
       console.log('');
       console.log(`A árvore não contém o ${value}.`);
     }
 
-
-
-    this.root = this.removeNode(this.root, value);
   }
 
   removeNode(root: Node | null, value: number): Node | null {
@@ -111,13 +114,17 @@ export class AVLTree {
       } else if (root.right === null) {
         root = root.left;
       } else {
-        const minValueNode = this.findMinNode(root.right);
+        const minValueNode = this.buscaMinNode(root.right);
         root.value = minValueNode.value;
         root.right = this.removeNode(root.right, minValueNode.value);
       }
     }
 
-    return root;
+    if (root !== null) {
+      this.atualizaAltura(root);
+    }
+
+    return this.balancearNo(root);;
   }
 
    searchValue(value: number): boolean {
@@ -154,7 +161,8 @@ export class AVLTree {
     console.log(`Valor: ${node.value}`)
     console.log(`Valor filho esquerda: ${leftChild}`)
     console.log(`Valor filho direita: ${rightChild}`)
-    console.log(`Altura: ${node.height}`)
+    console.log(`Altura: ${node.altura}`)
+    console.log(`fator balanceamento: ${this.getFatorBalanceamento(node)}`)
   }
   
   private searchNodeByValue(node: Node | null, value: number): Node | null {
@@ -167,6 +175,64 @@ export class AVLTree {
     } else {
       return this.searchNodeByValue(node.right, value);
     }
+  }
+
+  rotacionarEsquerda(node: Node): Node {
+    const auxNode = node.right!;
+    node.right = auxNode.left;
+    auxNode.left = node;
+
+    this.atualizaAltura(node);
+    this.atualizaAltura(auxNode);
+
+    return auxNode;
+  }
+
+  rotacionarDireita(node: Node): Node {
+    const auxNode = node.left!;
+    node.left = auxNode.right;
+    auxNode.right = node;
+
+    this.atualizaAltura(node);
+    this.atualizaAltura(auxNode);
+
+    return auxNode;
+  }
+
+  rotacionarEsquerdaDireita(node: Node): Node {
+    const leftChild = node.left!;
+    node.left = this.rotacionarEsquerda(leftChild);
+    return this.rotacionarDireita(node);
+  }
+
+  rotacionarDireitaEsquerda(node: Node): Node {
+    const rightChild = node.right!;
+  node.right = this.rotacionarDireita(rightChild);
+  return this.rotacionarEsquerda(node);
+  }
+
+  balancearNo(node: Node): Node {
+    this.atualizaAltura(node);
+
+    if (this.getFatorBalanceamento(node) > 1) {
+      if (this.getFatorBalanceamento(node.left!) < 0) {
+        console.log(`Desbalanceamento detectado no nó ${node.value}. Realizando rotação dupla à esquerda-direita.`);
+        return this.rotacionarEsquerdaDireita(node);
+      } else {
+        console.log(`Desbalanceamento detectado no nó ${node.value}. Realizando rotação à direita.`);
+        return this.rotacionarDireita(node);
+      }
+    } else if (this.getFatorBalanceamento(node) < -1) {
+      if (this.getFatorBalanceamento(node.right!) > 0) {
+        console.log(`Desbalanceamento detectado no nó ${node.value}. Realizando rotação dupla à direita-esquerda.`);
+        return this.rotacionarDireitaEsquerda(node);
+      } else {
+        console.log(`Desbalanceamento detectado no nó ${node.value}. Realizando rotação à esquerda.`);
+        return this.rotacionarEsquerda(node);
+      }
+    }
+
+    return node;
   }
   
 
@@ -192,4 +258,5 @@ export class AVLTree {
 
     
 }
+
 
