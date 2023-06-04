@@ -11,7 +11,6 @@ export class Node {
         this.altura = 1;
     }
 }
-
   
 export class AVLTree {
   root: Node | null;
@@ -25,14 +24,20 @@ export class AVLTree {
   }
 
   atualizaAltura(node: Node) {
-    node.altura = Math.max(this.getAltura(node.left), this.getAltura(node.right)) + 1;
+    const alturaEsquerda = node.left && node.left.altura ? node.left.altura : 0;
+    const alturaDireita = node.right && node.right.altura ? node.right.altura : 0;
+    node.altura = Math.max(alturaEsquerda, alturaDireita) + 1;
   }
+  
 
   getFatorBalanceamento(node: Node | null): number {
     if (node === null) {
       return 0;
     }
-    return this.getAltura(node.left) - this.getAltura(node.right);
+    const alturaEsquerda = node.left ? node.left.altura : 0;
+    const alturaDireita = node.right ? node.right.altura : 0;
+    
+    return alturaEsquerda - alturaDireita;
   }
 
 
@@ -122,9 +127,10 @@ export class AVLTree {
 
     if (root !== null) {
       this.atualizaAltura(root);
+      this.balancearNo(root);
     }
+    return root
 
-    return this.balancearNo(root);;
   }
 
    searchValue(value: number): boolean {

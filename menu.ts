@@ -1,6 +1,5 @@
 import * as readline from 'readline';
 import { AVLTree } from './AVLTree';
-import { inspect } from 'util';
 
 export class Menu {
   tree: AVLTree;
